@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<!-- Общее для всех шаблонов в header начало -->
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta http-equiv=X-UA-Compatible content="IE=edge">
+	<title>Школа Врача - обучение для врачей всех специальностей</title>
+	<link rel="stylesheet" href="css/style.css?0970970970">
+			<link rel="icon" href="img/favicon.ico" type="image/x-icon">
+
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+		<link rel="stylesheet" href="/css.css">
+	<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=QTz7XlwImOu8f3WZ6MSxIS4mxmuv6qKKDjy8K1gbeWvI8Yv0out2Ycm5QYmcdk70Z9a54mhhUE0hBTOyZk01sRIL0P2ayaN-OYO3HkDxwRTQ67QUR_2BKB2ROnSsXLUA" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://gc.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9wb2RwaXNrYS5wcm92cmFjaC5ydS9jYWxsYmFja182NjY2MS9zY2hvb2xfdnJhY2hfNzcwMV9uZXcv"/><script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+	<script type="text/javascript">
+
+	var APP_ID = 10823;
+	var EMV_ID = 7701;
+	window.ID2_SITE_USER_ID = 0;
+	var BLOCK_LOGIN = false;
+	var senddata_login=false;
+	var senddata_logout=false;
+	var iduser = null;
+	var id2user = {};
+
+	function onActionEventsLoad() {
+		window.ActionEvents.init({
+			publicationCode: 7701,
+		});
+	}
+
+	function connectFallbackLoader() {
+		var script = document.createElement('script');
+
+		script.async = true;
+		script.src = 'https://s3.action-media.ru/widgets/loader.js';
+		script.onload = onLoadLoaderScript;
+
+		document.getElementsByTagName('head')[0].appendChild(script);
+	}
+
+    //Подключаем loader
+    function connectLoader() {
+        var script = document.createElement('script');
+
+        script.async = true;
+        script.src = 'https://cdn.action-mcfr.ru/widgets/loader.js';
+        script.onload = onLoadLoaderScript;
+
+        document.getElementsByTagName('head')[0].appendChild(script);
+    }
+
+    //Загружаем виджет
+    function onLoadLoaderScript() {
+        window.WidgetLoader.load({ name: 'authButtonExternal' }, onAuthButtonLoad); // кнопка
+        window.WidgetLoader.load({ name: 'marketingLib' }, onActionEventsLoad); // отправка событий
+    }
+
+    //Инициализируем виджет - на момент инициализации html элемент с id передаваемым в loginblock, должен быть доступен
+    function onAuthButtonLoad() {
+        window.ActionAuthButtonExternal.init({
+            appid: APP_ID,
+            emid: EMV_ID,
+            user: iduser,
+            loginblock: 'panelcontainer',
+            theme: 'ss',
+            supportlink: 'https://id2.action-media.ru/Feedback',
+            reglink: 'https://id2.action-media.ru/Account/Registration?appid=10823&callbackurl=https%3A%2F%2Fpodpiska.provrach.ru%2Fcallback_66661%2Fschool_vrach_7701_new%2F&rand=349483449532&sig=4994e9b5f9300bc36485aa84299885a8',
+            mode: 'prod',
+            onUserChange: onUserChange,
+            onTokenChange: onTokenChange,
+
+        });
+
+
+    }
+
+    function onUserChange(a){
+        window.ID2_SITE_USER_ID = a['id'];
+        console.log(window.ID2_SITE_USER_ID);
+    };
+
+	function onTokenChange(a){
+    window.userIdToken=window.ActionAuthButtonExternal.getTokenValue();
+	window.ActionEvents.saveaction([window.ID2_SITE_USER_ID, "viewProductCard", document.location.href, "1", EMV_ID, ""]);
+		
+		
+
+	if (window.userIdToken) {
+		console.info("!!!"+window.userIdToken);
+		$.ajax({
+			url: 'id2/getUserAccess.php',
+			headers: {
+				"authorization":window.userIdToken,
+				},
+			data: "rand="+window.userIdToken,
+			dataType: "",
+			beforeSend: function(R){
+					},
+			success: function(data) {
+				var ID2userAccess = jQuery.parseJSON(data);
+				console.info(ID2userAccess);
+				},
+			error: function(R){
+				console.info("SERVER ANSVER ??: ", R);
+			}
+		});
+		$.ajax({
+			url: 'id2/getUserInfo.php',
+			headers: {
+				"authorization":window.userIdToken,
+				},
+			data: "rand="+window.userIdToken,
+			dataType: "",
+			beforeSend: function(R){
+					},
+			success: function(data) {
+				var ID2userIndo = jQuery.parseJSON(data)
+				console.info(ID2userIndo);
+				sessionStorage.user=ID2userIndo;
+				ID2_username = ID2userIndo['lastName']+" "+ID2userIndo['firstName']+" "+ID2userIndo['middleName'];
+				ID2_bitrixid = window.ID2_SITE_USER_ID;
+				ID2_email = ID2userIndo['email'];
+				ID2_phone = ID2userIndo['phone'];
+				jQuery('input[name=bitrixid]').val(ID2_bitrixid);
+				jQuery('input[name=name]').val(ID2_username);
+				jQuery('input[name=email]').val(ID2_email);
+				jQuery('input[name=phone]').val(ID2_phone);
+			},
+			error: function(R){
+				console.info("USER INFO ??: ", R);
+			}
+		});
+		}
+	};
+	connectLoader();
+	window.addEventListener('DOMContentLoaded', function() {
+		jQuery('input[name=url]').val(window.location.href);
+		jQuery('input[name=code]').val(EMV_ID);
+		jQuery('input[name=bitrixid]').val('0');
+	});
+	</script>
+	
+			<script type="text/javascript">
+				var _gaq = _gaq || [];
+                var pluginUrl =
+                '//www.google-analytics.com/plugins/ga/inpage_linkid.js';
+                _gaq.push(['_require', 'inpage_linkid', pluginUrl]);
+                _gaq.push(['_setAccount', 'UA-12544631-12']);
+
+                _gaq.push(["_setPageGroup", 1, "нет тега"]);
+                _gaq.push(["_setPageGroup", 2, "нет автора"]);
+
+                _gaq.push(['_setDomainName', '.provrach.ru']);
+                _gaq.push(['_addOrganic', 'mail.ru', 'q']);
+                _gaq.push(['_addOrganic', 'rambler.ru', 'words']);
+                _gaq.push(['_addOrganic', 'nova.rambler.ru', 'query']);
+                _gaq.push(['_addOrganic', 'nigma.ru', 's']);
+                _gaq.push(['_addOrganic', 'blogs.yandex.ru', 'text']);
+                _gaq.push(['_addOrganic', 'webalta.ru', 'q']);
+                _gaq.push(['_addOrganic', 'aport.ru', 'r']);
+                _gaq.push(['_addOrganic', 'akavita.by', 'z']);
+                _gaq.push(['_addOrganic', 'meta.ua', 'q']);
+                _gaq.push(['_addOrganic', 'bigmir.net', 'q']);
+                _gaq.push(['_addOrganic', 'tut.by', 'query']);
+                _gaq.push(['_addOrganic', 'all.by', 'query']);
+                _gaq.push(['_addOrganic', 'i.ua', 'q']);
+                _gaq.push(['_addOrganic', 'online.ua', 'q']);
+                _gaq.push(['_addOrganic', 'a.ua', 's']);
+                _gaq.push(['_addOrganic', 'ukr.net', 'search_query']);
+                _gaq.push(['_addOrganic', 'search.com.ua', 'q']);
+                _gaq.push(['_addOrganic', 'search.ua', 'query']);
+                _gaq.push(['_addOrganic', 'poisk.ru', 'text']);
+                _gaq.push(['_addOrganic', 'km.ru', 'sq']);
+                _gaq.push(['_addOrganic', 'liveinternet.ru', 'ask']);
+                _gaq.push(['_addOrganic', 'gogo.ru', 'q']);
+                _gaq.push(['_addOrganic', 'gde.ru', 'keywords']);
+                _gaq.push(['_addOrganic', 'quintura.ru', 'request']);
+                _gaq.push(['_addOrganic', 'blogsearch.google.ru', 'q', true]);
+                _gaq.push(['_addOrganic', 'google.com.ua', 'q', true]);
+                _gaq.push(['_addOrganic', 'images.yandex.ru', 'q', true]);
+                _gaq.push(['_addOrganic', 'poisk.ngs.ru', 'q']);
+                _gaq.push(['_addOrganic', 'ru.yahoo.com', 'p']);
+                _gaq.push(['_addOrganic', 'search.livetool.ru', 'text']);
+                _gaq.push(['_addOrganic', 'search.qip.ru', 'query']);
+                _gaq.push(['_addOrganic', 'search.ukr.net', 'search_query']);
+
+                _gaq.push(["_setCustomVar", 1, "User Type", "member_red", 2]);
+                _gaq.push(["_setCustomVar", 2, "Access", "paid", 2]);
+                _gaq.push(["_setCustomVar", 3, "User Type byEvent", "member_null", 2]);
+                _gaq.push(["_setCustomVar", 4, "BitrixID", "8217811", 2]);
+                _gaq.push(["_setCustomVar", 5, "Post", "ea4ecea6-e386-e611-a66e-78e3b502da44", 2]);
+
+                _gaq.push(['_trackPageview']);
+                (function () {
+                var ga = document.createElement('script');
+                ga.type = 'text/javascript';
+                ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0];
+                s.parentNode.insertBefore(ga, s);
+                })();
+            </script>
+
+
+			<!-- Yandex.Metrika counter -->
+			<script type="text/javascript" >
+			   (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+			   m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+			   (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+			   ym(84946435, "init", {
+					clickmap:true,
+					trackLinks:true,
+					accurateTrackBounce:true,
+					webvisor:true
+			   });
+			</script>
+			<noscript><div><img src="https://mc.yandex.ru/watch/84946435" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+			<!-- /Yandex.Metrika counter -->
+
+			 <!-- vk pixel -->
+			<script type="text/javascript">!function(){var t=document.createElement("script");t.type="text/javascript",t.async=!0,t.src='https://vk.com/js/api/openapi.js?169',t.onload=function(){VK.Retargeting.Init("VK-RTRG-1626223-fTAvJ"),VK.Retargeting.Hit()},document.head.appendChild(t)}();</script><noscript><img src="https://vk.com/rtrg?p=VK-RTRG-1626223-fTAvJ" style="position:fixed; left:-999px;" alt=""/></noscript> 
+			 <!-- /vk pixel -->
+</head>
+<body style="background: #F5F5F5;">
+
+
+
+
+
+
+<div class="container-fluid" id="header1" style="height: 34px;background: #ffffff;border-bottom: 1px solid #E5E5E5;">
+		<div class="col-lg-5 col-md-4 col-sm-2 col-xs-2">
+			<p class="header1_tr" style="float: none;">
+				<img src="img/logo-action-red.svg" height="16px" style="margin: 11px 0 0 -10px;height: 12px;">
+			</p>
+		</div>
+
+		<div class="col-lg-7 col-md-8 col-sm-10 col-xs-10">
+			<div id="panelcontainer" style="padding: 5px 0px;float: right;"></div>
+		</div>
+	</div>
+
+
+	<div class="top" style="background-image: url(img/sfera.png);background-repeat: no-repeat;background-position: right top;background-size: 35%;">
+		<div class="container">
+			
+			
+			<div class="col-md-8">
+					<img src="img/logo_top2.png" style="padding-bottom: 30px;width: 270px;">
+
+					<h1 style="font-size: 50px;font-weight: 700;padding-bottom: 30px;">Школа Врача -<br>обучение для врачей всех специальностей</h1>
+
+					<!-- <p style="font-size: 20px;padding-bottom: 30px;">Запросите гостевой доступ к корпоративной справочно-образовательной системе Актион 360 и получите памятку по всем изменениям в вашей работе -->
+<p style="font-size: 20px;padding-bottom: 30px;">Запросите гостевой доступ к корпоративной справочно-образовательной системе для всего вашего отдела
+					</p><a href="#callback" class="btn btn-default" style="color: #fff;background-color: #0a9b9f; border-color: #0a9b9f; border-radius: 50px; padding: 10px 50px; font-size: 20px;">Заказать доступ</a>
+
+				</div>
+
+
+
+<div class="row" style="padding: 50px 0px;">
+				<div class="col-md-12" style="padding: 50px 30px 0px 30px;">
+					<h1 style="font-size: 30px;font-weight: 500;padding-bottom: 30px;">Еще по теме</h1>
+
+				</div>
+				<div class="col-md-12" style="padding: 0px 30px 0px 15px;">
+				<div class="col-md-3">
+					<img src="img/pic1.svg">
+					<div style="color: #0a9b9f;font-size: 21px;font-weight: 500;padding: 10px 0px;">Статья</div>
+
+					Официальные документы после окончания обучения - Удостоверение о повышении квалификации
+				</div>
+				<div class="col-md-3">
+					<img src="img/pic2.svg">
+					<div style="color: #0a9b9f;font-size: 21px;font-weight: 500;padding: 10px 0px;">Рекомендация</div>
+
+					Следите за результатами на сайте или распечатайте наглядные отчеты об обучении				</div>
+				<div class="col-md-3">
+					<img src="img/pic3.svg">
+					<div style="color: #0a9b9f;font-size: 21px;font-weight: 500;padding: 10px 0px;">Памятка</div>
+
+					Подключите график обучения врачей в Школе Врача для быстрого прохождения аккредитации				</div>
+				<div class="col-md-3" style="padding: 0px 0px 50px 0;">
+					<img src="img/pic4.svg">
+					<div style="color: #0a9b9f;font-size: 21px;font-weight: 500;padding: 10px 0px;">Формы и образцы</div>
+
+					Вы можете оставить ваше обращение и на него обязательно ответит Онлайн-помощник				</div>
+
+				</div>
+
+			</div>
+			
+		
+		
+
+
+			</div>
+
+
+
+		</div>
+	</div>
+
+    <div class="container" id="prog">
+      <div class="row" style="padding-top: 50px;">
+        <div class="col-md-12 text-center" style="font-family: ProximaNova;font-style: normal;font-weight: 500;font-size: 40px;line-height: 50px;color: #333333;/*padding-bottom: 30px;*/">
+			Что входит в Актион
+
+        </div>
+
+      </div>
+
+	  <div class="row" style="padding-top: 50px;" id="bux_s">
+        <div class="col-md-6" style="padding-bottom: 20px;">
+			<div class="block_w">
+				<p><span style="border: 1px solid #0a9b9f;box-sizing: border-box;border-radius: 3px;color: #0a9b9f;padding: 3px 7px;font-size: 14px;">Справочные системы</span></p>
+
+				<p><span style="font-weight: 500;">Быстрые ответы на рабочие вопросы сотрудников</span></p>
+
+				<p>Разъяснения дают авторитеты в своей области: юристы получат рекомендации судей, бухгалтеры — специалистов Минфина и ФНС, финдиры — практиков известных компаний, коммерсанты и руководители — напрямую от экспертов в области маркетинга, продаж и внедрения бизнес-процессов.</p>
+			</div>
+        </div>
+        <div class="col-md-6" style="padding-bottom: 20px;">
+			<div class="block_w">
+			<p><span style="border: 1px solid #0a9b9f;box-sizing: border-box;border-radius: 3px;color: #0a9b9f;padding: 3px 7px;font-size: 14px;">Поддержка</span></p>
+
+				<p><span style="font-weight: 500;">Индивидуальные ответы экспертов онлайн</span></p>
+
+				<p>Если готового ответа недостаточно, можно задать вопрос профильному эксперту онлайн. Он ответит индивидуально тут же или подготовит письменный ответ за 24 часа. При необходимости мы получим официальный ответ из профильного ведомства.<br>&nbsp;</p>
+			</div>
+       </div>
+	   <div class="col-md-6" style="padding-bottom: 20px;">
+		 <div class="block_w">
+			<p><span style="border: 1px solid #0a9b9f;box-sizing: border-box;border-radius: 3px;color: #0a9b9f;padding: 3px 7px;font-size: 14px;">Онлайн-школы</span></p>
+
+				<p><span style="font-weight: 500;">Готовая система аттестации и обучения сотрудников
+</span></p>
+
+				<p>Готовые тесты и обучающие курсы для большинства профессий, соответствующие профстандартам — можно сразу назначать аттестацию и обучение. Не нужно ничего внедрять. При необходимости мы адаптируем тесты и курсы под вашу компанию.</p>
+			</div>
+        </div>
+        <div class="col-md-6" style="padding-bottom: 20px;">
+			<div class="block_w">
+			<p><span style="border: 1px solid #0a9b9f;box-sizing: border-box;border-radius: 3px;color: #0a9b9f;padding: 3px 7px;font-size: 14px;">Индивидуализация</span></p>
+
+				<p><span style="font-weight: 500;">Информация вашей компании в единой системе</span></p>
+
+				<p>Вы сможете размещать документы вашей компании в справочных системах «Актион 360». При этом все ваши данные будут надёжно защищены.<br>&nbsp;<br>&nbsp;</p>
+			</div>
+       </div>
+      </div>
+
+
+	   <div class="row" style="padding-top: 50px;">
+        <div class="col-md-12 text-center" style="font-family: ProximaNova;font-style: normal;font-weight: 400;font-size: 24px;color: #333333;padding-bottom: 10px;">
+			Закажите гостевой доступ<br>ко всем материалам Школы Врача
+
+
+			<p><a href="#callback" class="btn btn-default" style="margin-top: 20px;color: #fff;background-color: #0a9b9f; border-color: #0a9b9f; border-radius: 50px; padding: 10px 50px; font-size: 20px;">Заказать гостевой доступ</a>
+
+        </div>
+
+      </div>
+
+
+	  <div class="row" style="padding: 50px 0px;" id="bux_s">
+        <div class="col-md-6" style="font-family: ProximaNova;font-style: normal;font-weight: 500;font-size: 40px;line-height: 50px;color: #333333;/*padding-bottom: 30px;*/">
+			Как Актион влияет на эффективность вашей компании
+
+        </div>
+        <div class="col-md-6" style="padding-bottom: 20px;">
+			<div class="media">
+			  <div class="media-left" style="padding: 0 20px;color: #0a9b9f;font-size: 30px;">
+			   <span>1</span>
+			  </div>
+			  <div class="media-body" style="vertical-align: initial;font-size: 20px;padding-top: 7px;">
+			   Повышает профессионализм сотрудников и скорость решения бизнес-задач
+			  </div>
+			</div>
+			<div class="media">
+			  <div class="media-left" style="padding: 0 20px;color: #0a9b9f;font-size: 30px;">
+			   <span>2</span>
+			  </div>
+			  <div class="media-body" style="vertical-align: initial;font-size: 20px;padding-top: 7px;">
+			   Уменьшает вероятность и количество штрафов из-за ошибок
+
+			  </div>
+			</div>
+			<div class="media">
+			  <div class="media-left" style="padding: 0 20px;color: #0a9b9f;font-size: 30px;">
+			   <span>3</span>
+			  </div>
+			  <div class="media-body" style="vertical-align: initial;font-size: 20px;padding-top: 7px;">
+				Сокращает затраты на покупку дорогих разрозненных информационных сервисов и оплату обучения
+
+			  </div>
+			</div>
+       </div>
+
+      </div>
+ </div> <!-- /container -->
+
+<div style="background: #333333;color:#ffffff;">
+	 <div class="container" id="prog">
+      <div class="row" style="padding-top: 50px;">
+
+		 <div class="col-md-12" style="font-family: ProximaNova;font-style: normal;font-weight: 500;font-size: 40px;line-height: 50px;color: #ffffff;/*padding-bottom: 30px;*/">
+			Преимущества Актион
+
+        </div>
+
+	 </div>
+	  <div class="row" style="padding: 50px 0px;">
+       <div class="col-md-4">
+					<img src="img/pic5.svg">
+					<div style="color: #ffffff;font-size: 18px;font-weight: 300;padding: 10px 0px;">Специалистам от специалистов</div>
+
+					Мы знаем потребности каждого подразделения компании, что помогает нам эффективнее решать задачи бизнеса в целом
+
+
+				</div>
+				<div class="col-md-4">
+					<img src="img/pic6.svg">
+					<div style="color: #ffffff;font-size: 18px;font-weight: 300;padding: 10px 0px;">Авторитетные эксперты
+</div>
+
+					Разъяснения дают авторитеты в своей области: юристы получат рекомендации судей, бухгалтеры — специалистов Минфина и ФНС, финдиры — практиков известных компаний
+
+
+				</div>
+				<div class="col-md-4">
+					<img src="img/pic7.svg">
+					<div style="color: #ffffff;font-size: 18px;font-weight: 300;padding: 10px 0px;">Мы всегда рядом
+</div>
+
+					В любой момент можно задать свой вопрос профильному эксперту онлайн. Он ответит индивидуально тут же или подготовит письменный ответ за 24 часа
+
+
+				</div>
+	 </div>
+ </div> <!-- /container -->
+ </div>
+
+ <div style="background: #ffffff;">
+ <div class="container" id="prog">
+      <div class="row" style="padding-top: 50px;">
+	   <div class="col-md-12 text-center" style="font-family: ProximaNova;font-style: normal;font-weight: 500;font-size: 40px;line-height: 50px;color: #333333;/*padding-bottom: 30px;*/">
+			Актион уже выбрали<br>для себя крупные компании
+
+
+
+<img src="img/client.png" style="width: 100%;">
+        </div>
+	 </div>
+
+ </div> <!-- /container -->
+</div>
+
+
+<div style="background: #333333;color:#ffffff;" id="callback">
+	 <div class="container" id="prog">
+      <div class="row" style="padding-top: 70px;">
+	  <div class="col-md-12 text-center" style="font-family: ProximaNova;font-style: normal;font-weight: 300;font-size: 30px;color: #ffffff;/*padding-bottom: 30px;*/">
+			Узнайте, как заказать гостевой доступ к Школе Врача<br>и получить поддержку для вашей компании
+
+
+        </div>
+	 </div>
+	  <div class="row" style="padding: 30px 0px 50px 0px;">
+	  
+
+<section class="section">
+	<div class="container">
+		<!-- FORM ID2 -->
+		<div class="forma_wrap">
+        	<form class="forma"  style="color: #353535;">
+				
+				<input type="hidden" value="0" name="bitrixid">
+				<input type="hidden" value="" name="firstname">
+				<input type="hidden" value="" name="middlename">
+				<input type="hidden" value="" name="lastname">
+				<input type="hidden" value="" name="post">
+				<input type="hidden" value="" name="postid">
+				<input type="hidden" value="" name="ogrn">
+				<input type="hidden" value="" name="kpp">
+				<input type="hidden" value="" name="inn">
+				<input type="hidden" value="" name="company">
+				<input type="hidden" value="" name="region">
+				<input type="hidden" value="" name="city">
+				<input type="hidden" value="" name="url">
+				<input type="hidden" value="" name="utm_medium">
+				<input type="hidden" value="" name="utm_source">
+				<input type="hidden" value="" name="utm_campaign">
+				<input type="hidden" value="" name="utm_content">
+				<input type="hidden" value="" name="utm_term">
+				<input type="hidden" value="" name="code">
+				<input type="hidden" value="0" name="event">
+				<input type="hidden" value="Сахарный диабет 1 типа у взрослых" name="comment">
+				<input type="hidden" value="" name="email">
+				
+				<label for="name"><input name="name" type="text" placeholder="Имя"></label>
+				<label for="email"><input name="email" type="email" placeholder="Email"></label>
+				<label for="phone"><input name="phone" type="phone" placeholder="Телефон"></label>
+				
+				<a class="btn sendform">Заказать доступ</a>
+				<p class="notice">Нажимая на кнопку, вы&nbsp;даете согласие на&nbsp;<a href="https://id2.action-media.ru/l/politika_pd?id=2" target="_blank" style="text-decoration: underline;">обработку персональных данных</a></p>
+			</form>
+			<div class="error" style="display:none;">При отправке сообщения произошла ошибка. Пожалуйста, попробуйте ещё раз позже.</div>
+			<div class="success" style="display:none;  height: auto;">Спасибо! Ваша заявка принята.</div>
+		</div>
+		<!-- FORM ID2 END -->
+		
+		
+	</div>
+</section>
+
+
+
+	 </div>
+	 <div class="row" style="padding: 30px 0px 70px 0px;color:#ffffff">
+		<div class="col-md-6">
+
+<p>© Актион-диджитал, Медиагруппа Актион-МЦФЭР, 2023
+
+<p>Условия использования     Политика обработки персональных данных
+		</div>
+		<div class="col-md-3">
+
+По всем вопросам звонок бесплатный
+<h4>8 (800) 505-38-28</h4>
+		</div>
+		<div class="col-md-3 text-right">
+		<img src="img/logo_footer.png">
+		</div>
+
+
+	 </div>
+ </div> <!-- /container -->
+ </div>
+
+
+
+
+
+<script src="js/jquery.maskedinput.min.js"></script>
+<script src="js/forms.js"></script>
+
+</body>
+</html>
